@@ -67,3 +67,17 @@ def delete_document(file_id):
     except Exception as e:
         st.error(f"An error occurred while deleting the document: {str(e)}")
         return None
+    
+def load_github_repo(repo_url):
+    print("Loading GitHub repository...")
+    try:
+        params = {"repo_url": repo_url}
+        response = requests.post(f"http://localhost:8000/load-github-repo", params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"Failed to load GitHub repository. Error: {response.status_code} - {response.text}")
+            return None
+    except Exception as e:
+        st.error(f"An error occurred while loading the GitHub repository: {str(e)}")
+        return None

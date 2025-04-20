@@ -7,7 +7,7 @@ from typing import List
 from langchain_core.documents import Document
 import os
 from chroma_utils import vectorstore
-retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
+retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
 output_parser = StrOutputParser()
 

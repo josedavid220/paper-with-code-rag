@@ -1,5 +1,5 @@
 import streamlit as st
-from api_utils import upload_document, list_documents, delete_document
+from api_utils import upload_document, load_github_repo, list_documents, delete_document
 
 def display_sidebar():
     # Sidebar: Model Selection
@@ -7,7 +7,7 @@ def display_sidebar():
     st.sidebar.selectbox("Select Model", options=model_options, key="model")
 
     # Sidebar: Upload Document
-    st.sidebar.header("Upload Document")
+    st.sidebar.header("Upload paper")
     uploaded_file = st.sidebar.file_uploader("Choose a file", type=["pdf", "docx", "html"])
     if uploaded_file is not None:
         if st.sidebar.button("Upload"):
@@ -17,6 +17,17 @@ def display_sidebar():
                     st.sidebar.success(f"File '{uploaded_file.name}' uploaded successfully with ID {upload_response['file_id']}.")
                     st.session_state.documents = list_documents()  # Refresh the list after upload
 
+    # Sidebar: Load GitHub Repository
+    st.sidebar.header("Github Repository")
+    repo_url = st.sidebar.text_input("Enter GitHub repository URL", placeholder="https://github.com/user/repo.git")
+    load_repo_button = st.sidebar.button("Load Repository")
+    if repo_url is not None and load_repo_button:
+        with st.spinner("Loading..."):
+            load_response = load_github_repo(repo_url)
+            if load_response:
+                st.sidebar.success(f"Repository loaded successfully with ID {load_response['file_id']}.")
+                st.session_state.documents = list_documents()
+    
     # Sidebar: List Documents
     st.sidebar.header("Uploaded Documents")
     if st.sidebar.button("Refresh Document List"):

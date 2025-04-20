@@ -2,7 +2,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from pydantic_models import QueryInput, QueryResponse, DocumentInfo, DeleteFileRequest
 from langchain_utils import get_rag_chain
 from db_utils import insert_application_logs, get_chat_history, get_all_documents, insert_document_record, delete_document_record
-from chroma_utils import index_document_to_chroma, delete_doc_from_chroma
+from chroma_utils import index_document_to_chroma, index_python_code_to_chroma, delete_doc_from_chroma
 import os
 import uuid
 import logging
@@ -78,3 +78,25 @@ def delete_document(request: DeleteFileRequest):
             return {"error": f"Deleted from Chroma but failed to delete document with file_id {request.file_id} from the database."}
     else:
         return {"error": f"Failed to delete document with file_id {request.file_id} from Chroma."}
+
+@app.post("/load-github-repo")
+def load_github_repo(repo_url: str):
+
+    # Validate the GitHub URL
+    if not (repo_url.startswith("https://github.com/") and repo_url.endswith(".git")):
+        raise HTTPException(status_code=400, detail="Invalid GitHub repository URL. Please provide a valid URL.")
+
+    try:
+        # Save whole repo as a single entity
+        file_id = insert_document_record(repo_url)
+        success = index_python_code_to_chroma(repo_url, file_id)
+        
+        if success:
+            return {"message": f"Github repository {repo_url} has been successfully uploaded and indexed.", "file_id": file_id}
+        else:
+            delete_document_record(file_id)
+            raise HTTPException(status_code=500, detail=f"Failed to index repository {repo_url}.")
+        
+    except Exception as e:
+        logging.error(f"Error loading GitHub repository: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to load GitHub repository: {str(e)}")
