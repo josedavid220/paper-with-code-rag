@@ -11,10 +11,14 @@ class QueryInput(BaseModel):
     session_id: str = Field(default=None)
     model: ModelName = Field(default=ModelName.GPT4_1_NANO)
 
+class SourceName(str, Enum):
+    RAG = "rag"
+    GOOGLE = "google"
 class QueryResponse(BaseModel):
     answer: str
     session_id: str
     model: ModelName
+    source: SourceName
 
 class DocumentInfo(BaseModel):
     id: int

@@ -1,11 +1,13 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from pydantic_models import QueryInput, QueryResponse, DocumentInfo, DeleteFileRequest
-from langchain_utils import get_rag_chain
+from pydantic_models import QueryInput, QueryResponse, DocumentInfo, DeleteFileRequest, SourceName
+from langchain_utils import get_rag_chain, agent_app
 from db_utils import insert_application_logs, get_chat_history, get_all_documents, insert_document_record, delete_document_record
 from chroma_utils import index_document_to_chroma, index_python_code_to_chroma, delete_doc_from_chroma
 import os
 import uuid
 import logging
+import asyncio
+
 logging.basicConfig(filename='app.log', level=logging.INFO)
 app = FastAPI()
 
@@ -16,18 +18,19 @@ def chat(query_input: QueryInput):
     if not session_id:
         session_id = str(uuid.uuid4())
 
-    
-
     chat_history = get_chat_history(session_id)
-    rag_chain = get_rag_chain(query_input.model.value)
-    answer = rag_chain.invoke({
-        "input": query_input.question,
-        "chat_history": chat_history
-    })['answer']
+    initial_state = {
+        "query": query_input.question,
+        "chat_history": chat_history,
+    }
+    
+    state = asyncio.run(agent_app.ainvoke(initial_state))
+    source = SourceName.RAG if state["destination"]["destination"] == "rag" else SourceName.GOOGLE
+    answer = state["answer"]
     
     insert_application_logs(session_id, query_input.question, answer, query_input.model.value)
     logging.info(f"Session ID: {session_id}, AI Response: {answer}")
-    return QueryResponse(answer=answer, session_id=session_id, model=query_input.model)
+    return QueryResponse(answer=answer, session_id=session_id, model=query_input.model, source=source)
 
 from fastapi import UploadFile, File, HTTPException
 import os

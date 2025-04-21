@@ -23,11 +23,13 @@ def display_chat_interface():
                     st.markdown(response['answer'])
                     
                     with st.expander("Details"):
-                        st.subheader("Generated Answer")
-                        st.code(response['answer'])
+                        # st.subheader("Generated Answer")
+                        # st.code(response['answer'])
                         st.subheader("Model Used")
                         st.code(response['model'])
                         st.subheader("Session ID")
                         st.code(response['session_id'])
+                        st.subheader("RAG or Google")
+                        st.code(response['source'])
             else:
                 st.error("Failed to get a response from the API. Please try again.")
