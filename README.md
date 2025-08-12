@@ -5,41 +5,42 @@ A Retrieval‑Augmented Generation (RAG) system powered with Google Search to re
 The original code for a production-ready RAG system was taken from this [tutorial](https://blog.futuresmart.ai/building-a-production-ready-rag-chatbot-with-fastapi-and-langchain) by the great Pradip Nichite. This system was capable of:
 
 1. Ingesting PDFs, DOCXs, and HTMLs into a Chroma vector store.  
-2. Answer via an LLM using a RAG over indexed documents (history‑aware).
-3. Expose a clean REST API (FastAPI) and interactive frontend (Streamlit).
+1. Answer via an LLM using a RAG over indexed documents (history‑aware).
+1. Expose a clean REST API (FastAPI) and interactive frontend (Streamlit).
 
 With that as a starting point, I added the following features:
- 1. Automatic Github repository cloning and indexing by just providing the link  
- 2. Live Google Search (history‑aware) automatically routed per‑query. 
+1. Automatic Github repository cloning and indexing by just providing the link  
+1. Live Google Search (history‑aware) automatically routed per‑query. 
 
 ## Full list of features
 
-- **Multi‑Tenant Document Indexing**
-  - Upload PDFs, DOCXs, HTML files
-  - Index GitHub repos (Python code)
-  - Vector embeddings in Chroma
+**Multi‑Tenant Document Indexing**
+- Upload PDFs, DOCXs, HTML files
+- Index GitHub repos (Python code)
+- Vector embeddings in Chroma
 
-- **Hybrid QA Agent**
-  - **RAG Chain**
-    - History‑aware retriever with `create_history_aware_retriever`
-    - Prompts to contextualize follow‑ups
-    - Uses `gpt-4.1-nano` or `gpt-4o-mini`
-  - **Google‑Search Chain**
-    - LLM‑reformulated search queries
-    - Wraps `GoogleSearchAPIWrapper` as a Tool
-    - History‑aware prompt for external info
+**Hybrid QA Agent**
+1. **RAG Chain**
+   - History‑aware retriever with `create_history_aware_retriever`
+   - Prompts to contextualize follow‑ups
+   - Uses `gpt-4.1-nano` or `gpt-4o-mini`
 
-- **Dynamic Routing**  
-  - LLM router that returns `{"destination": "rag"}` or `{"destination": "google"}` based on the user query
-  - Built on LangChain’s `StateGraph` (node graph)
+1. **Google‑Search Chain**
+   - LLM‑reformulated search queries
+   - Wraps `GoogleSearchAPIWrapper` as a Tool
+   - History‑aware prompt for external info
 
-- **Full Chat History**  
-  - Persisted per session in DB
-  - Fed into both RAG and Google chains
+**Dynamic Routing**  
+- LLM router that returns `{"destination": "rag"}` or `{"destination": "google"}` based on the user query
+- Built on LangChain’s `StateGraph` (node graph)
 
-- **Production‑Grade API**  
-  - FastAPI endpoints for uploading, listing, and deleting docs
-  - `/chat` endpoint returns `answer`, `session_id`, `model`, and `source` ("rag" or "google")
+**Full Chat History**  
+- Persisted per session in DB
+- Fed into both RAG and Google chains
+
+**Production‑Grade API**  
+- FastAPI endpoints for uploading, listing, and deleting docs
+- `/chat` endpoint returns `answer`, `session_id`, `model`, and `source` ("rag" or "google")
 
 ## Architecture of main functionality
 ```mermaid
